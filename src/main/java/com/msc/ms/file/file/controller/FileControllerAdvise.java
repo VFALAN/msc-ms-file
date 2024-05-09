@@ -2,6 +2,7 @@ package com.msc.ms.file.file.controller;
 
 import com.msc.ms.file.common.model.dto.ErrorRequestDTO;
 import com.msc.ms.file.file.error.NoFileFoundException;
+import com.msc.ms.file.minio.error.MinioOperationException;
 import io.micrometer.core.annotation.Counted;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -31,6 +32,14 @@ public class FileControllerAdvise {
     @ExceptionHandler(NoFileFoundException.class)
     public ResponseEntity<ErrorRequestDTO> handlerNoFileFoundException(NoFileFoundException e) {
         log.info("Error searching file in bucket {} by the reference {} due {}", e.getBucket(), e.getReference(), e.getMessage());
+        return new ResponseEntity<>(ErrorRequestDTO.builder()
+                .message(e.getMessage())
+                .build(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MinioOperationException.class)
+    public ResponseEntity<ErrorRequestDTO> handlerMinioOperationException(MinioOperationException e) {
+        log.error("Error in operation with Minio Server due: {}", e.getMessage());
         return new ResponseEntity<>(ErrorRequestDTO.builder()
                 .message(e.getMessage())
                 .build(), HttpStatus.NOT_FOUND);

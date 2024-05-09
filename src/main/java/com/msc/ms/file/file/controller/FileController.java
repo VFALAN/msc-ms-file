@@ -4,15 +4,16 @@ import com.msc.ms.file.file.FileService;
 import com.msc.ms.file.file.error.NoFileFoundException;
 import com.msc.ms.file.file.model.FileRequest;
 
+import com.msc.ms.file.minio.error.MinioOperationException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -34,5 +35,15 @@ public class FileController {
         return ResponseEntity.ok(pathResponse);
     }
 
+    @GetMapping("/getFilesNamesFromBucket/{bucketName}")
+    public ResponseEntity<List<String>> getFileNamesFromBucket(@PathVariable(name = "bucketName") String pBucketName) throws MinioOperationException {
+        return ResponseEntity.ok(fileService.getFileNamesFromBucket(pBucketName));
+    }
 
+    @GetMapping("/getFile")
+    public ResponseEntity<Resource> getFile(@RequestParam("bucket") String pBucket, @RequestParam("file") String pFile) throws MinioOperationException {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment: filename=\"" + pFile + "\"")
+                .body(fileService.getFile(pBucket, pFile));
+    }
 }

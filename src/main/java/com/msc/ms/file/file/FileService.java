@@ -5,12 +5,15 @@ import com.msc.ms.file.file.error.NoFileFoundException;
 import com.msc.ms.file.file.model.FileEntity;
 import com.msc.ms.file.file.model.FileRequest;
 import com.msc.ms.file.minio.MinioService;
+import com.msc.ms.file.minio.error.MinioOperationException;
 import com.msc.ms.file.typefile.TypeFileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -27,9 +30,9 @@ public class FileService {
     // common-files/COMMON-USER-IMAGE.png
     public String saveDefaultUserImage(Integer idUser) throws NoFileFoundException {
         final var pathOfDefaultImage = this.getDefaultResourcePath(COMMON_USER_IMAGE_ID, COMMON_BUCKET);
-if(pathOfDefaultImage==null){
-    throw new NoFileFoundException("File no found",COMMON_IMAGE_USER_NAME,COMMON_BUCKET);
-}
+        if (pathOfDefaultImage == null) {
+            throw new NoFileFoundException("File no found", COMMON_IMAGE_USER_NAME, COMMON_BUCKET);
+        }
         final var mTypeFile = typeFileService.findById(COMMON_USER_IMAGE_ID);
         final var fileEntityUserProfileImage = FileEntity.builder()
                 .userOwner(idUser)
@@ -53,5 +56,14 @@ if(pathOfDefaultImage==null){
         final var mTypeFile = typeFileService.findById(typeFileId);
         final var file = iFileRespository.findByIdTypeFileAndBucketAndActive(mTypeFile, bucket, CommonVariables.ACTIVE_STATE);
         return file.getPath();
+    }
+
+
+    public List<String> getFileNamesFromBucket(String bucket) throws MinioOperationException {
+        return minioService.getFilesNameFromBucket(bucket);
+    }
+
+    public Resource getFile(String bucket, String object) throws MinioOperationException {
+        return minioService.getFile(bucket, object);
     }
 }
